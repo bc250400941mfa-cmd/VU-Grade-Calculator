@@ -59,6 +59,8 @@
         const ChevronDown = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m6 9 6 6 6-6"/></svg>;
         const Download = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>;
         const RotateCcw = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>;
+        const HelpCircle = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>;
+        const MessageCircle = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/></svg>;
 
         // --- Constants ---
         const GRADE_SCALE = [
@@ -78,14 +80,6 @@
             'Assignment', 'Quiz', 'GDB', 'Presentation', 'Term Paper', 'Project'
         ];
 
-        // Specific colors per user request
-        const COLORS = {
-            final: '#ffcd56',
-            mid: '#ff9f40',
-            quiz: '#36a2eb',
-            other: '#ff6384'
-        };
-
         // Unique Colors for each type
         const TYPE_COLORS = {
             'Assignment': { bg: 'bg-[#ff6384]', text: 'text-[#ff6384]', light: 'bg-[#ff6384]/10', border: 'border-[#ff6384]/30', ring: 'focus:ring-[#ff6384]' },
@@ -103,6 +97,7 @@
         // --- Main Application ---
         const VUResultEstimator = () => {
             const [showSettings, setShowSettings] = useState(true);
+            const [showHelp, setShowHelp] = useState(false);
             const [isDownloading, setIsDownloading] = useState(false);
             const [courseCode, setCourseCode] = useState('');
             const reportRef = useRef(null);
@@ -194,18 +189,11 @@
             // Helper to calculate score for a single bucket (e.g., all Quizzes)
             const calculateBucket = (type) => {
                 const typeActs = activities.filter(a => a.type === type);
-                // If there are no activities of this type but there is a weight, 
-                // the obtained contribution is 0 (as per VU logic - skipped means 0)
-                
                 const obtained = typeActs.reduce((s, a) => s + a.obtained, 0);
                 const total = typeActs.reduce((s, a) => s + a.total, 0);
-                
-                // Avoid divide by zero
                 const percentage = total > 0 ? (obtained / total) * 100 : 0;
-                
                 const weight = scheme[type] || 0;
                 const contribution = (percentage * weight) / 100;
-
                 return { obtained, total, percentage, contribution, weight };
             };
 
@@ -213,15 +201,13 @@
             const semesterStats = useMemo(() => {
                 let totalContribution = 0;
                 const breakdown = {};
-
                 ACTIVITY_TYPES.forEach(type => {
-                    if (scheme[type] > 0) { // Only calculate if weight exists
+                    if (scheme[type] > 0) { 
                         const stats = calculateBucket(type);
                         breakdown[type] = stats;
                         totalContribution += stats.contribution;
                     }
                 });
-
                 return { contribution: totalContribution, breakdown };
             }, [activities, scheme]);
 
@@ -243,7 +229,6 @@
             const totalStats = useMemo(() => {
                 const totalPercentage = semesterStats.contribution + midtermStats.contribution + finalStats.contribution;
                 let grade = GRADE_SCALE.find(g => totalPercentage >= g.min) || GRADE_SCALE[GRADE_SCALE.length - 1];
-                
                 let risk = 'Safe';
                 let riskColor = 'text-green-600';
                 if (grade.label === 'F' || grade.label === 'D') {
@@ -262,14 +247,10 @@
                 return GRADE_SCALE.map(grade => {
                     const target = grade.min;
                     const neededContribution = target - currentScore;
-                    
                     if (neededContribution <= 0) return { ...grade, status: 'Achieved', marks: 0 };
-                    
                     const neededRawPercentage = (neededContribution / scheme.Final) * 100;
                     const neededRawMarks = (neededRawPercentage / 100) * final.total;
-                    
                     if (neededRawMarks > final.total) return { ...grade, status: 'Impossible', marks: neededRawMarks };
-                    
                     return { ...grade, status: 'Possible', marks: neededRawMarks };
                 });
             }, [semesterStats.contribution, midtermStats.contribution, scheme.Final, final.total]);
@@ -283,29 +264,39 @@
 
             return (
                 <div className="min-h-screen bg-gray-50 text-gray-800 font-sans pb-12">
-                <header className="bg-blue-900 text-white p-6 shadow-lg sticky top-0 z-50">
-                    <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+                <header className="bg-blue-900 text-white p-4 shadow-lg sticky top-0 z-50">
+                    <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
                         <div className="flex items-center gap-3">
                             <GraduationCap className="w-8 h-8 text-yellow-400" />
                             <div>
-                                <h1 className="text-2xl font-bold">VU Result Estimator</h1>
-                                <p className="text-blue-200 text-sm">Bucket-Based Grading Scheme</p>
+                                <h1 className="text-xl md:text-2xl font-bold">VU Result Estimator</h1>
+                                <p className="text-blue-200 text-xs md:text-sm">Bucket-Based Grading Scheme</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2 bg-blue-800/50 p-2 rounded-lg border border-blue-700">
-                            <span className="text-xs text-blue-200 font-semibold uppercase tracking-wider">Course:</span>
-                            <input 
-                                type="text"
-                                placeholder="CS101"
-                                value={courseCode}
-                                onChange={(e) => setCourseCode(e.target.value)}
-                                className="bg-transparent text-white placeholder-blue-300/50 focus:outline-none w-20 font-bold text-center uppercase"
-                            />
+                        <div className="flex flex-wrap items-center justify-center gap-3">
+                            <div className="flex items-center gap-2 bg-blue-800/50 p-2 rounded-lg border border-blue-700">
+                                <span className="text-xs text-blue-200 font-semibold uppercase tracking-wider">Course:</span>
+                                <input 
+                                    type="text"
+                                    placeholder="CS101"
+                                    value={courseCode}
+                                    onChange={(e) => setCourseCode(e.target.value)}
+                                    className="bg-transparent text-white placeholder-blue-300/50 focus:outline-none w-20 font-bold text-center uppercase text-sm"
+                                />
+                            </div>
+                            <a 
+                                href="https://whatsapp.com/channel/0029Va7fciT84OmBqXE5ua0M" 
+                                target="_blank"
+                                className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-bold transition shadow-sm"
+                            >
+                                <MessageCircle className="w-4 h-4" />
+                                Join Channel
+                            </a>
                         </div>
                     </div>
                 </header>
 
-                <main className="max-w-5xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <main className="max-w-6xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
                     
                     {/* LEFT COLUMN: Inputs */}
                     <div className="lg:col-span-2 space-y-6">
@@ -639,14 +630,63 @@
                                 {isDownloading ? "Generating..." : <><Download className="w-5 h-5" /> Save Report</>}
                             </button>
 
-                             <div className="flex justify-center">
+                             <div className="flex justify-center gap-3">
                                 <button 
                                     onClick={resetAll}
                                     className="text-xs text-red-400 hover:text-red-600 flex items-center gap-1 transition"
                                 >
-                                    <RotateCcw className="w-3 h-3" /> Reset All Data
+                                    <RotateCcw className="w-3 h-3" /> Reset
                                 </button>
                             </div>
+
+                            {/* Help & FAQ Section */}
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                                <button 
+                                    onClick={() => setShowHelp(!showHelp)}
+                                    className="w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100 transition group"
+                                >
+                                    <div className="flex items-center gap-2 font-bold text-gray-700 group-hover:text-blue-700">
+                                        <HelpCircle className="w-5 h-5 text-blue-600" />
+                                        How to Use & FAQs
+                                    </div>
+                                    <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${showHelp ? 'rotate-180' : ''}`} />
+                                </button>
+                                
+                                {showHelp && (
+                                    <div className="p-4 text-xs text-gray-600 space-y-4 border-t border-gray-100 bg-white animate-in slide-in-from-top-2">
+                                        <div className="space-y-2">
+                                            <h4 className="font-bold text-blue-700 uppercase tracking-wide">Quick Guide</h4>
+                                            <ol className="list-decimal list-inside space-y-1 ml-1 text-gray-500">
+                                                <li>Set grading weights in <strong>Scheme Config</strong>.</li>
+                                                <li>Add all your Assignments/Quizzes.</li>
+                                                <li>Enter Midterm & Expected Final marks.</li>
+                                                <li>Check the projected Grade & GPA.</li>
+                                            </ol>
+                                        </div>
+                                        <div className="space-y-2 border-t pt-2 border-gray-100">
+                                            <h4 className="font-bold text-blue-700 uppercase tracking-wide">FAQs</h4>
+                                            <div>
+                                                <p className="font-bold text-gray-800">Q: How accurate is this tool?</p>
+                                                <p>A: It uses exact mathematical averages. However, official results may vary slightly due to university normalization curves.</p>
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-gray-800">Q: Is this the final version?</p>
+                                                <p>A: Yes, this version supports the latest grading buckets and dynamic schemes.</p>
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-gray-800">Q: I found an issue?</p>
+                                                <p>A: Contact me directly via WhatsApp at <a href="https://wa.me/+923156229141" className="text-green-600 font-bold hover:underline">0315-6229141</a>.</p>
+                                            </div>
+                                            <div className="pt-2">
+                                                <a href="https://whatsapp.com/channel/0029Va7fciT84OmBqXE5ua0M" target="_blank" className="block text-center bg-green-100 text-green-700 py-2 rounded font-bold hover:bg-green-200 transition">
+                                                    Join Our Support Group
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
                         </div>
                     </div>
                 </main>
