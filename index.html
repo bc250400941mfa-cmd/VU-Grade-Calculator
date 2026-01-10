@@ -78,6 +78,28 @@
             'Assignment', 'Quiz', 'GDB', 'Presentation', 'Term Paper', 'Project'
         ];
 
+        // Specific colors per user request
+        const COLORS = {
+            final: '#ffcd56',
+            mid: '#ff9f40',
+            quiz: '#36a2eb',
+            other: '#ff6384'
+        };
+
+        // Unique Colors for each type
+        const TYPE_COLORS = {
+            'Assignment': { bg: 'bg-[#ff6384]', text: 'text-[#ff6384]', light: 'bg-[#ff6384]/10', border: 'border-[#ff6384]/30', ring: 'focus:ring-[#ff6384]' },
+            'Quiz': { bg: 'bg-[#36a2eb]', text: 'text-[#36a2eb]', light: 'bg-[#36a2eb]/10', border: 'border-[#36a2eb]/30', ring: 'focus:ring-[#36a2eb]' },
+            'GDB': { bg: 'bg-[#ff6384]', text: 'text-[#ff6384]', light: 'bg-[#ff6384]/10', border: 'border-[#ff6384]/30', ring: 'focus:ring-[#ff6384]' },
+            'Presentation': { bg: 'bg-[#ff6384]', text: 'text-[#ff6384]', light: 'bg-[#ff6384]/10', border: 'border-[#ff6384]/30', ring: 'focus:ring-[#ff6384]' },
+            'Term Paper': { bg: 'bg-[#ff6384]', text: 'text-[#ff6384]', light: 'bg-[#ff6384]/10', border: 'border-[#ff6384]/30', ring: 'focus:ring-[#ff6384]' },
+            'Project': { bg: 'bg-[#ff6384]', text: 'text-[#ff6384]', light: 'bg-[#ff6384]/10', border: 'border-[#ff6384]/30', ring: 'focus:ring-[#ff6384]' },
+            
+            // Midterm and Final specific colors
+            'Midterm': { bg: 'bg-[#ff9f40]', text: 'text-[#ff9f40]', light: 'bg-[#ff9f40]/10', border: 'border-[#ff9f40]/30', ring: 'focus:ring-[#ff9f40]' },
+            'Final': { bg: 'bg-[#ffcd56]', text: 'text-[#ffcd56]', light: 'bg-[#ffcd56]/10', border: 'border-[#ffcd56]/30', ring: 'focus:ring-[#ffcd56]' }
+        };
+
         // --- Main Application ---
         const VUResultEstimator = () => {
             const [showSettings, setShowSettings] = useState(true);
@@ -256,6 +278,9 @@
             const totalSchemeWeight = Object.values(scheme).reduce((a, b) => a + b, 0);
             const isSchemeError = totalSchemeWeight !== 100;
 
+            const midColor = TYPE_COLORS['Midterm'];
+            const finColor = TYPE_COLORS['Final'];
+
             return (
                 <div className="min-h-screen bg-gray-50 text-gray-800 font-sans pb-12">
                 <header className="bg-blue-900 text-white p-6 shadow-lg sticky top-0 z-50">
@@ -306,43 +331,46 @@
                                     Define the weightage for each component. Set to 0 if not applicable.
                                 </p>
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                    {ACTIVITY_TYPES.map(type => (
-                                        <div key={type}>
-                                            <label className="block text-xs font-bold text-gray-600 mb-1">{type}</label>
-                                            <div className="relative">
-                                                <input 
-                                                    type="number" min="0" max="100"
-                                                    value={scheme[type]}
-                                                    onFocus={handleFocus}
-                                                    onChange={(e) => handleSchemeChange(type, e.target.value)}
-                                                    className="w-full border rounded-lg p-2 text-sm font-bold text-center focus:ring-2 focus:ring-blue-500 outline-none"
-                                                />
-                                                <span className="absolute right-2 top-2 text-xs text-gray-400">%</span>
+                                    {ACTIVITY_TYPES.map(type => {
+                                        const color = TYPE_COLORS[type];
+                                        return (
+                                            <div key={type}>
+                                                <label className={`block text-xs font-bold ${color.text} mb-1`}>{type}</label>
+                                                <div className="relative">
+                                                    <input 
+                                                        type="number" min="0" max="100"
+                                                        value={scheme[type]}
+                                                        onFocus={handleFocus}
+                                                        onChange={(e) => handleSchemeChange(type, e.target.value)}
+                                                        className={`w-full border rounded-lg p-2 text-sm font-bold text-center focus:ring-2 ${color.ring} outline-none`}
+                                                    />
+                                                    <span className="absolute right-2 top-2 text-xs text-gray-400">%</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                     <div className="sm:col-span-1 border-l pl-4 border-gray-100">
-                                        <label className="block text-xs font-bold text-indigo-600 mb-1">Midterm</label>
+                                        <label className={`block text-xs font-bold ${midColor.text} mb-1`}>Midterm</label>
                                         <div className="relative">
                                             <input 
                                                 type="number" min="0" max="100"
                                                 value={scheme.Midterm}
                                                 onFocus={handleFocus}
                                                 onChange={(e) => handleSchemeChange('Midterm', e.target.value)}
-                                                className="w-full border rounded-lg p-2 text-sm font-bold text-center focus:ring-2 focus:ring-indigo-500 outline-none text-indigo-700"
+                                                className={`w-full border rounded-lg p-2 text-sm font-bold text-center focus:ring-2 ${midColor.ring} outline-none ${midColor.text}`}
                                             />
                                             <span className="absolute right-2 top-2 text-xs text-gray-400">%</span>
                                         </div>
                                     </div>
                                     <div className="sm:col-span-1">
-                                        <label className="block text-xs font-bold text-purple-600 mb-1">Final</label>
+                                        <label className={`block text-xs font-bold ${finColor.text} mb-1`}>Final</label>
                                         <div className="relative">
                                             <input 
                                                 type="number" min="0" max="100"
                                                 value={scheme.Final}
                                                 onFocus={handleFocus}
                                                 onChange={(e) => handleSchemeChange('Final', e.target.value)}
-                                                className="w-full border rounded-lg p-2 text-sm font-bold text-center focus:ring-2 focus:ring-purple-500 outline-none text-purple-700"
+                                                className={`w-full border rounded-lg p-2 text-sm font-bold text-center focus:ring-2 ${finColor.ring} outline-none ${finColor.text}`}
                                             />
                                             <span className="absolute right-2 top-2 text-xs text-gray-400">%</span>
                                         </div>
@@ -365,59 +393,62 @@
                         </div>
                         
                         <div className="space-y-3">
-                            {activities.map((activity) => (
-                                <div key={activity.id} className="flex flex-col sm:flex-row sm:items-end gap-3 p-3 bg-gray-50 rounded-lg group border border-gray-100 hover:border-blue-200 transition relative">
-                                    <div className="w-full sm:w-1/4">
-                                        <label className="text-xs text-gray-500 block mb-1 font-medium">Type</label>
-                                        <select
-                                            value={activity.type}
-                                            onChange={(e) => updateActivity(activity.id, 'type', e.target.value)}
-                                            className="w-full bg-white border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:border-blue-500 cursor-pointer"
+                            {activities.map((activity) => {
+                                const color = TYPE_COLORS[activity.type] || TYPE_COLORS['Assignment'];
+                                return (
+                                    <div key={activity.id} className={`flex flex-col sm:flex-row sm:items-end gap-3 p-3 rounded-lg group border transition relative ${color.light} ${color.border}`}>
+                                        <div className="w-full sm:w-1/4">
+                                            <label className="text-xs text-gray-500 block mb-1 font-medium">Type</label>
+                                            <select
+                                                value={activity.type}
+                                                onChange={(e) => updateActivity(activity.id, 'type', e.target.value)}
+                                                className={`w-full bg-white border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:border-blue-500 cursor-pointer ${color.text} font-bold`}
+                                            >
+                                                {ACTIVITY_TYPES.map(type => (
+                                                    <option key={type} value={type}>{type} ({scheme[type]}%)</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="flex-grow">
+                                            <label className="text-xs text-gray-500 block mb-1 font-medium">Name</label>
+                                            <input 
+                                                type="text" 
+                                                value={activity.name}
+                                                onChange={(e) => updateActivity(activity.id, 'name', e.target.value)}
+                                                className="w-full bg-white border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:border-blue-500"
+                                            />
+                                        </div>
+                                        <div className="flex gap-2 w-full sm:w-auto">
+                                            <div className="w-1/2 sm:w-20">
+                                                <label className="text-xs text-gray-500 block mb-1 font-medium">Obtained</label>
+                                                <input 
+                                                    type="number" min="0"
+                                                    value={activity.obtained}
+                                                    onFocus={handleFocus}
+                                                    onChange={(e) => updateActivity(activity.id, 'obtained', e.target.value)}
+                                                    className="w-full bg-white border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:border-blue-500 text-center font-bold"
+                                                />
+                                            </div>
+                                            <div className="w-1/2 sm:w-20">
+                                                <label className="text-xs text-gray-500 block mb-1 font-medium">Total</label>
+                                                <input 
+                                                    type="number" min="0"
+                                                    value={activity.total}
+                                                    onFocus={handleFocus}
+                                                    onChange={(e) => updateActivity(activity.id, 'total', e.target.value)}
+                                                    className="w-full bg-white border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:border-blue-500 text-center"
+                                                />
+                                            </div>
+                                        </div>
+                                        <button 
+                                            onClick={() => removeActivity(activity.id)}
+                                            className="absolute -top-2 -right-2 bg-white text-gray-400 hover:text-red-500 p-1 rounded-full shadow border hover:bg-red-50 transition"
                                         >
-                                            {ACTIVITY_TYPES.map(type => (
-                                                <option key={type} value={type}>{type} ({scheme[type]}%)</option>
-                                            ))}
-                                        </select>
+                                            <Trash2 className="w-3 h-3" />
+                                        </button>
                                     </div>
-                                    <div className="flex-grow">
-                                        <label className="text-xs text-gray-500 block mb-1 font-medium">Name</label>
-                                        <input 
-                                            type="text" 
-                                            value={activity.name}
-                                            onChange={(e) => updateActivity(activity.id, 'name', e.target.value)}
-                                            className="w-full bg-white border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:border-blue-500"
-                                        />
-                                    </div>
-                                    <div className="flex gap-2 w-full sm:w-auto">
-                                        <div className="w-1/2 sm:w-20">
-                                            <label className="text-xs text-gray-500 block mb-1 font-medium">Obtained</label>
-                                            <input 
-                                                type="number" min="0"
-                                                value={activity.obtained}
-                                                onFocus={handleFocus}
-                                                onChange={(e) => updateActivity(activity.id, 'obtained', e.target.value)}
-                                                className="w-full bg-white border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:border-blue-500 text-center font-bold"
-                                            />
-                                        </div>
-                                        <div className="w-1/2 sm:w-20">
-                                            <label className="text-xs text-gray-500 block mb-1 font-medium">Total</label>
-                                            <input 
-                                                type="number" min="0"
-                                                value={activity.total}
-                                                onFocus={handleFocus}
-                                                onChange={(e) => updateActivity(activity.id, 'total', e.target.value)}
-                                                className="w-full bg-white border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:border-blue-500 text-center"
-                                            />
-                                        </div>
-                                    </div>
-                                    <button 
-                                        onClick={() => removeActivity(activity.id)}
-                                        className="absolute -top-2 -right-2 bg-white text-gray-400 hover:text-red-500 p-1 rounded-full shadow border hover:bg-red-50 transition"
-                                    >
-                                        <Trash2 className="w-3 h-3" />
-                                    </button>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
 
                         <div className="mt-4 flex justify-between items-center">
@@ -428,7 +459,7 @@
                                 <Plus className="w-4 h-4" /> Add Activity
                             </button>
                             <div className="text-right text-xs text-gray-400">
-                                Each type contributes based on its specific weight.
+                                Activities are grouped by type automatically.
                             </div>
                         </div>
                     </div>
@@ -439,7 +470,7 @@
                         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                             <div className="flex justify-between items-center mb-4">
                                 <h2 className="text-lg font-bold text-gray-800">3. Midterm</h2>
-                                <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
+                                <span className={`text-xs font-bold ${midColor.text} ${midColor.light} px-2 py-1 rounded`}>
                                     {scheme.Midterm}% Weight
                                 </span>
                             </div>
@@ -451,7 +482,7 @@
                                         value={midterm.obtained}
                                         onFocus={handleFocus}
                                         onChange={(e) => setMidterm({...midterm, obtained: parseFloat(e.target.value) || 0})}
-                                        className="w-full border-2 border-indigo-100 rounded-lg p-2 font-bold text-indigo-900 focus:outline-none focus:border-indigo-500"
+                                        className={`w-full border-2 border-gray-100 rounded-lg p-2 font-bold ${midColor.text} focus:outline-none ${midColor.ring}`}
                                     />
                                 </div>
                                 <div>
@@ -461,7 +492,7 @@
                                         value={midterm.total}
                                         onFocus={handleFocus}
                                         onChange={(e) => setMidterm({...midterm, total: parseFloat(e.target.value) || 0})}
-                                        className="w-full border border-gray-200 rounded-lg p-2 focus:outline-none focus:border-indigo-500"
+                                        className={`w-full border border-gray-200 rounded-lg p-2 focus:outline-none ${midColor.ring}`}
                                     />
                                 </div>
                             </div>
@@ -471,7 +502,7 @@
                         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                             <div className="flex justify-between items-center mb-4">
                                 <h2 className="text-lg font-bold text-gray-800">4. Final Exam</h2>
-                                <span className="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded">
+                                <span className={`text-xs font-bold ${finColor.text} ${finColor.light} px-2 py-1 rounded`}>
                                     {scheme.Final}% Weight
                                 </span>
                             </div>
@@ -483,14 +514,14 @@
                                         value={final.obtained}
                                         onFocus={handleFocus}
                                         onChange={(e) => setFinal({...final, obtained: parseFloat(e.target.value) || 0})}
-                                        className="w-24 border-2 border-purple-100 rounded-lg p-2 font-bold text-purple-900 focus:outline-none focus:border-purple-500"
+                                        className={`w-24 border-2 border-gray-100 rounded-lg p-2 font-bold ${finColor.text} focus:outline-none ${finColor.ring}`}
                                     />
                                     <div className="flex items-center text-gray-400">/ {final.total}</div>
                                     <input 
                                         type="range" min="0" max={final.total}
                                         value={final.obtained}
                                         onChange={(e) => setFinal({...final, obtained: parseFloat(e.target.value) || 0})}
-                                        className="flex-grow accent-purple-600"
+                                        className="flex-grow accent-[#ffcd56]"
                                     />
                                 </div>
                             </div>
@@ -529,28 +560,31 @@
                                     <div className="p-4 border-b border-gray-100">
                                         <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Scheme Contribution Breakdown</h4>
                                         <div className="space-y-2">
-                                            {Object.entries(semesterStats.breakdown).map(([type, stats]) => (
-                                                <div key={type} className="flex items-center text-xs">
-                                                    <div className="w-24 font-medium text-gray-600">{type}</div>
-                                                    <div className="flex-grow bg-gray-100 rounded-full h-2 mr-2 overflow-hidden">
-                                                        <div className="bg-blue-500 h-full rounded-full" style={{width: `${(stats.contribution / (stats.weight || 1)) * 100}%`}}></div>
+                                            {Object.entries(semesterStats.breakdown).map(([type, stats]) => {
+                                                const color = TYPE_COLORS[type];
+                                                return (
+                                                    <div key={type} className="flex items-center text-xs">
+                                                        <div className={`w-24 font-bold ${color.text}`}>{type}</div>
+                                                        <div className="flex-grow bg-gray-100 rounded-full h-2 mr-2 overflow-hidden">
+                                                            <div className={`${color.bg} h-full rounded-full`} style={{width: `${(stats.contribution / (stats.weight || 1)) * 100}%`}}></div>
+                                                        </div>
+                                                        <div className={`w-12 text-right font-bold ${color.text}`}>{stats.contribution.toFixed(2)}%</div>
                                                     </div>
-                                                    <div className="w-12 text-right font-bold">{stats.contribution.toFixed(2)}%</div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                             <div className="flex items-center text-xs">
-                                                <div className="w-24 font-medium text-gray-600">Midterm</div>
+                                                <div className={`w-24 font-bold ${midColor.text}`}>Midterm</div>
                                                 <div className="flex-grow bg-gray-100 rounded-full h-2 mr-2 overflow-hidden">
-                                                    <div className="bg-indigo-500 h-full rounded-full" style={{width: `${(midtermStats.contribution / (scheme.Midterm || 1)) * 100}%`}}></div>
+                                                    <div className={`${midColor.bg} h-full rounded-full`} style={{width: `${(midtermStats.contribution / (scheme.Midterm || 1)) * 100}%`}}></div>
                                                 </div>
-                                                <div className="w-12 text-right font-bold text-indigo-600">{midtermStats.contribution.toFixed(2)}%</div>
+                                                <div className={`w-12 text-right font-bold ${midColor.text}`}>{midtermStats.contribution.toFixed(2)}%</div>
                                             </div>
                                             <div className="flex items-center text-xs">
-                                                <div className="w-24 font-medium text-gray-600">Final</div>
+                                                <div className={`w-24 font-bold ${finColor.text}`}>Final</div>
                                                 <div className="flex-grow bg-gray-100 rounded-full h-2 mr-2 overflow-hidden">
-                                                    <div className="bg-purple-500 h-full rounded-full" style={{width: `${(finalStats.contribution / (scheme.Final || 1)) * 100}%`}}></div>
+                                                    <div className={`${finColor.bg} h-full rounded-full`} style={{width: `${(finalStats.contribution / (scheme.Final || 1)) * 100}%`}}></div>
                                                 </div>
-                                                <div className="w-12 text-right font-bold text-purple-600">{finalStats.contribution.toFixed(2)}%</div>
+                                                <div className={`w-12 text-right font-bold ${finColor.text}`}>{finalStats.contribution.toFixed(2)}%</div>
                                             </div>
                                         </div>
                                     </div>
